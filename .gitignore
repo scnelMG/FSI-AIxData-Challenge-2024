@@ -1,0 +1,48 @@
+# Python / Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+
+# Local environments
+.venv/
+venv/
+env/
+.env
+
+# Model and experiment outputs
+catboost_info/
+*.log
+*.pkl
+*.joblib
+*.model
+
+# Keep only curated notebooks in notebooks/
+/*.ipynb
+!/notebooks/
+!/notebooks/*.ipynb
+
+# Keep only selected public data files
+/data/*
+!/data/README.md
+!/data/train.csv
+!/data/test.csv
+!/data/sample_submission.csv
+
+# Keep only the curated final submission archive
+/*.zip
+/submissions/*
+!/submissions/final_submission.zip
+
+# Root-level generated submissions and experiment folders
+/*.csv
+/5000sample_*/
+/make5000_*/
+/under_submission/
+/검증*/
+/컬럼제거*/
+/최종_예측결과_250109/
+
+# Office/local source artifacts not needed for the portfolio repo
+/데이터_명세_및_생성조건.xlsx
