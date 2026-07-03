@@ -23,17 +23,13 @@ catboost_info/
 !/notebooks/
 !/notebooks/*.ipynb
 
-# Keep only selected public data files
+# Do not publish competition data or submission artifacts
 /data/*
 !/data/README.md
-!/data/train.csv
-!/data/test.csv
-!/data/sample_submission.csv
 
-# Keep only the curated final submission archive
+# Keep submission artifacts local only
 /*.zip
 /submissions/*
-!/submissions/final_submission.zip
 
 # Root-level generated submissions and experiment folders
 /*.csv

@@ -38,17 +38,13 @@
 
 ```text
 data/
-  train.csv
-  test.csv
-  sample_submission.csv
-submissions/
-  final_submission.zip
+  README.md
 ```
 
 공개 안전성 기준:
 
 - Drive에는 제출 ZIP, 실험별 제출 폴더, 원본 데이터, `.git` 백업이 섞여 있어 추가 업로드하지 않았습니다.
-- 현재 저장소의 기존 데이터/제출 파일은 대회 산출물 확인용이며, 외부 제출 시에는 대회 약관에 맞춰 비공개 전환 또는 제외 검토가 필요합니다.
+- 대회 CSV와 제출 ZIP은 현재 공개 브랜치에서 제외했습니다.
 - 민감한 실제 금융 고객 정보는 포함하지 않았고, 대회 설명상 합성 데이터 기반입니다.
 
 ## 모델링 전략
@@ -114,14 +110,14 @@ flowchart LR
 |-- docs/
 |   |-- project-summary.md
 |   |-- experiment-notes.md
+|   |-- data-publication.md
 |   `-- public-safety.md
 |-- notebooks/
 |   |-- eda_summary.ipynb
 |   |-- ctgan_experiment.ipynb
 |   |-- kfold_generation.ipynb
 |   `-- final_modeling.ipynb
-`-- submissions/
-    `-- final_submission.zip
+`-- submissions/  # local only
 ```
 
 ## 재현 방법
@@ -131,7 +127,7 @@ pip install -r requirements.txt
 jupyter notebook notebooks/final_modeling.ipynb
 ```
 
-필요 입력 파일:
+재실행 시 로컬에 별도로 배치해야 하는 입력 파일:
 
 ```text
 data/train.csv
