@@ -137,6 +137,14 @@ data/sample_submission.csv
 
 최종 노트북은 분류 결과와 합성 데이터 제출 파일을 생성한 뒤 대회 요구 형식의 ZIP으로 패키징합니다.
 
+## 빠른 검증
+
+공개 포트폴리오 제출 전에는 아래 명령으로 필수 문서와 대용량 tracked 파일 여부를 확인합니다.
+
+```bash
+python scripts/verify_portfolio.py
+```
+
 ## 회고
 
 - **검증 설계 우선**: 단일 split 튜닝보다 fold 기반 검증 체계가 더 중요했습니다.
