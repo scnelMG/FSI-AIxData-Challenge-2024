@@ -1,5 +1,7 @@
 # FSI AIxData Challenge 2024
 
+<p align="center">금융 합성데이터 생성·검증 · CTGAN · Python · Jupyter Notebook</p>
+
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Data Analysis](https://img.shields.io/badge/Data%20Analysis-Financial%20Fraud-0F766E)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
