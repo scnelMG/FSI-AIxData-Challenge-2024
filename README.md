@@ -1,160 +1,137 @@
 # FSI AIxData Challenge 2024
 
-<p align="center">금융 합성데이터 생성·검증 · CTGAN · Python · Jupyter Notebook</p>
-
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
-![Data Analysis](https://img.shields.io/badge/Data%20Analysis-Financial%20Fraud-0F766E)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
+![CTGAN](https://img.shields.io/badge/CTGAN-Synthetic%20Data-0F766E)
 ![ML](https://img.shields.io/badge/ML-LightGBM%20%7C%20XGBoost-2563EB)
 ![Portfolio](https://img.shields.io/badge/Portfolio-Finance%20AI-111827)
 
-> 금융 이상거래 유형을 분류하기 위해 CTGAN 기반 소수 클래스 보강, Stratified K-Fold 검증, 언더샘플링, 트리 모델 앙상블을 실험한 금융 AI 경진대회 프로젝트입니다.
+합성 금융거래 데이터에서 13개 `Fraud_Type`을 분류하고, 합성 데이터의 유용성과 익명성까지 함께 평가한 금융 AI 경진대회 프로젝트입니다. **120,000개 학습 행 중 118,800개가 단일 클래스 `m`에 집중된 극단적 불균형**을 CTGAN 증강, 언더샘플링, 트리 기반 앙상블로 다뤘습니다.
 
-[대회 페이지](https://dacon.io/en/competitions/official/236297/overview/description) | [회고 글](https://pmq0328.tistory.com/2)
+[공식 대회 안내](https://dacon.io/competitions/official/236297/overview/description) · [공식 규정](https://dacon.io/competitions/official/236297/overview/rules) · [공식 리더보드](https://dacon.io/competitions/official/236297/leaderboard) · [회고](https://pmq0328.tistory.com/2)
+
+## 목차
+
+- [프로젝트 개요](#프로젝트-개요)
+- [문제 정의와 접근](#문제-정의와-접근)
+- [핵심 구현](#핵심-구현)
+- [결과와 배운 점](#결과와-배운-점)
+- [내 기여](#내-기여)
+- [실행 방법](#실행-방법)
 
 ## 프로젝트 개요
 
 | 항목 | 내용 |
 | --- | --- |
 | 대회 | FSI AIxData Challenge 2024 |
-| 주제 | 이상 금융거래 탐지 AI 모델 고도화 |
-| 문제 유형 | 13개 `Fraud_Type` 다중분류 |
-| 평가 방식 | Macro F1 + TCAP |
-| 최종 결과 | Public 28위 / Private 22위 |
-| 회고 기준 결과 | 제출 로직 수정 시 Public 27위 / Private 20위 추정 |
-| 핵심 접근 | CTGAN 증강, 5-fold 검증, 언더샘플링, XGBoost/LightGBM weighted blending |
+| 기간 | 2024.08.05 ~ 2024.08.30 09:59 |
+| 팀 | 간갠겐궨 (공식 리더보드 표기) |
+| 과제 | 이상 금융거래의 `Fraud_Type` 다중 분류 및 합성 데이터 생성 |
+| 분류 대상 | 13개 클래스 |
+| 평가 | `0.7 × Macro F1 + 0.3 × (1 - TCAP)` |
+| 공식 결과 | Private **0.702640** · **22위** |
+| 최종 접근 | CTGAN 증강, Stratified 5-Fold, 언더샘플링 비율 9·10, 4개 모델 균등 블렌딩 |
 
-## 문제 정의
+## 문제 정의와 접근
 
-이 프로젝트의 핵심은 단순히 분류 모델을 학습하는 것이 아니라, **불균형한 금융 이상거래 유형을 안정적으로 예측하는 검증 체계**를 만드는 것이었습니다. 다수 클래스가 전체 분포를 지배하고, 일부 이상거래 유형은 샘플 수가 부족했기 때문에 정확도 중심 접근으로는 실무적으로 의미 있는 모델을 만들기 어렵다고 판단했습니다.
+학습 데이터는 120,000행, 테스트 데이터는 120,000행입니다. 학습 타깃에서 `m`은 118,800행이고 나머지 12개 클래스는 각 100행뿐이었습니다. 정확도만 올리면 다수 클래스 예측에 치우치므로, 이 프로젝트의 초점은 소수 클래스의 정보를 잃지 않으면서 리더보드의 분류·생성 데이터 평가를 함께 통과하는 것이었습니다.
 
-중점 질문은 다음과 같았습니다.
-
-- 소수 이상거래 유형을 보강하면서 검증 데이터 누수를 어떻게 막을 것인가?
-- 어떤 언더샘플링 비율이 소수 클래스 재현율과 전체 안정성의 균형을 맞추는가?
-- Public/Private 리더보드 변동에 덜 흔들리는 앙상블 전략은 무엇인가?
-
-## 데이터와 공개 범위
-
-대회 데이터는 DACON에서 제공한 합성 금융거래 데이터입니다. 다만 대회 데이터와 제출 산출물은 재배포 조건이 명확하지 않을 수 있어, 포트폴리오 관점에서는 **구조와 실험 흐름을 설명하는 문서**를 우선 평가 대상으로 봐야 합니다.
-
-```text
-data/
-  README.md
-```
-
-공개 안전성 기준:
-
-- Drive에는 제출 ZIP, 실험별 제출 폴더, 원본 데이터, `.git` 백업이 섞여 있어 추가 업로드하지 않았습니다.
-- 대회 CSV와 제출 ZIP은 현재 공개 브랜치에서 제외했습니다.
-- 민감한 실제 금융 고객 정보는 포함하지 않았고, 대회 설명상 합성 데이터 기반입니다.
-
-## 모델링 전략
-
-### 1. 합성 데이터 생성
-
-소수 클래스 보강을 위해 CTGAN을 사용했습니다. 검증 데이터 누수를 줄이기 위해 fold별 train split 안에서만 합성 데이터를 생성하는 방향을 실험했습니다.
-
-### 2. 검증 설계
-
-`StratifiedKFold`를 사용해 각 fold의 fraud type 분포를 최대한 유지했습니다. 단일 random split보다 불균형 데이터에서 로컬 검증 신뢰도가 높다고 판단했습니다.
-
-### 3. 샘플링 전략
-
-다수 클래스가 모델 판단을 지배하지 않도록 여러 언더샘플링 비율을 비교했습니다. 최종 방향은 소수 클래스 recall을 개선하면서 macro-level score가 무너지지 않는 비율을 찾는 것이었습니다.
-
-### 4. 앙상블 전략
-
-주요 모델군은 아래와 같습니다.
-
-- XGBoost
-- LightGBM
-- CatBoost
-- RandomForest baseline
-
-Voting, stacking, blending을 비교했고, 최종 제출은 검증 성능이 안정적인 모델 중심의 weighted blending 전략을 사용했습니다.
-
-## 파이프라인
+1. 소수 클래스의 학습 신호를 늘리되 검증 데이터가 생성 과정에 섞이지 않게 하려면 어떻게 해야 하는가?
+2. 다수 클래스를 어느 수준까지 줄여야 Macro F1의 균형을 유지할 수 있는가?
+3. 단일 모델보다 서로 다른 샘플링 비율의 모델을 블렌딩하는 편이 더 안정적인가?
 
 ```mermaid
 flowchart LR
-    A["Raw Competition Data"] --> B["EDA & Column Review"]
-    B --> C["Fold Split"]
-    C --> D["CTGAN per Fold"]
-    D --> E["Preprocessing & Encoding"]
-    E --> F["Under-sampling Ratio Test"]
-    F --> G["Model Comparison"]
-    G --> H["Voting / Stacking / Blending"]
-    H --> I["Final Train & Inference"]
-    I --> J["Submission ZIP"]
+    A["DACON train / test"] --> B["Stratified 5-Fold"]
+    B --> C["Train fold 내부 CTGAN"]
+    C --> D["전처리·원-핫 인코딩"]
+    D --> E["언더샘플링 비율 비교"]
+    E --> F["LightGBM·XGBoost 학습"]
+    F --> G["4개 확률 균등 블렌딩"]
+    G --> H["clf / syn CSV와 ZIP 생성"]
 ```
 
-## 결과
+## 핵심 구현
 
-| 구분 | Public Rank | Private Rank | 비고 |
-| --- | ---: | ---: | --- |
-| 공식 제출 | 28 | 22 | 최종 제출 결과 |
-| 회고 기준 수정 | 27 | 20 | 제출 로직 수정 후 추정 결과 |
+### 1. 누수 없는 CTGAN 증강
 
-가장 큰 배움은 성능이 분류기 하나로 결정되지 않는다는 점이었습니다. 검증 split, 합성 데이터 품질, sampling ratio, label mapping, 제출 패키징 로직이 모두 최종 점수에 영향을 줬습니다.
+`StratifiedKFold(n_splits=5, shuffle=True, random_state=736665)`로 분할한 뒤, 각 검증 fold의 학습 데이터만으로 클래스별 CTGAN을 학습했습니다. 클래스별로 최대 100개 행을 학습 표본으로 사용하고 1,000개 생성 행을 만들도록 구성했습니다. 즉, 검증 fold를 합성 데이터 학습에 사용하지 않도록 경계를 명시했습니다.
+
+대회 제출용 생성 데이터는 클래스별 1,000행이 필요했습니다. CTGAN의 generator/discriminator loss 추이를 확인하고, epoch·생성 행 수·특성 구성을 바꿔가며 생성 데이터와 분류 성능의 균형을 탐색했습니다.
+
+### 2. 입력 특성 정리
+
+- 개인·계좌 식별자 5개는 모델 입력에서 제외했습니다.
+- `Time_difference`는 초 단위 수치형 특성으로 변환했습니다.
+- 거래 채널·운영체제 등 9개 범주형 컬럼은 학습 fold 기준 원-핫 인코딩했습니다.
+- 날짜 문자열, IP·MAC 주소, 위치처럼 원본 구현에서 직접 학습에 쓰지 않은 고카디널리티 문자열 컬럼은 제외했습니다.
+
+### 3. 불균형 제어와 블렌딩
+
+다수 클래스는 전체 빈도가 가장 큰 라벨을 기준으로 자동 판단하고, 소수 클래스 합계에 대한 비율 9와 10으로 각각 언더샘플링합니다. 최종 확률은 아래 네 모델을 0.25씩 평균합니다.
+
+| 학습 데이터 | 모델 |
+| --- | --- |
+| 언더샘플링 비율 9 | LightGBM, XGBoost |
+| 언더샘플링 비율 10 | LightGBM, XGBoost |
+
+### 4. 제출 형식까지 코드로 확인
+
+노트북은 `clf_submission.csv`와 `syn_submission.csv`를 만들고, 두 파일만 포함한 ZIP을 저장소 루트의 `outputs/`에 생성합니다. ZIP을 만들기 전에 분류 제출물의 행·컬럼을 템플릿과 대조하고, 합성 제출물은 학습 데이터 컬럼 구성과 클래스별 1,000행·총 13,000행 조건을 확인합니다. 패키징 뒤에도 ZIP 내부 파일 목록을 다시 검사합니다.
+
+## 결과와 배운 점
+
+공식 Private 리더보드에서 **0.702640 · 22위**를 기록했습니다. 이 프로젝트에서 확인한 핵심은 분류기의 종류만 바꾸는 것보다 검증 분할, 생성 데이터의 범위, 다수 클래스 비율, 제출 파일 규격이 함께 맞물린다는 점입니다.
+
+- CTGAN 증강은 반드시 학습 fold 내부에서 생성해야 검증 점수를 과대평가하지 않습니다.
+- 언더샘플링은 비율 하나를 고정하기보다 후보 비율을 나란히 비교해야 합니다.
+- 대회 점수는 Macro F1과 익명성 항 `1 - TCAP`를 함께 보므로, 분류 CSV와 합성 CSV를 별도 산출물로 관리해야 합니다.
+
+### 검증 한계도 함께 확인
+
+초기 8:2 holdout에서는 XGBoost가 0.9801, voting이 0.9809, stacking이 0.9818 수준의 내부 점수를 보였지만, 해당 제출 점수는 각각 0.6294, 0.6097, 0.6704였습니다. 이 차이를 근거로 단일 holdout 점수를 최종 근거로 삼지 않고, fold 단위 증강·검증과 실제 제출 결과를 함께 확인하는 방향으로 전환했습니다. 공개 노트북은 CTGAN 학습 비용 때문에 `RUN_FOLD_VALIDATION = False`를 기본값으로 두며, fold 점수가 필요할 때만 `True`로 바꿔 실행합니다.
+
+원본 데이터와 당시의 패키지 잠금 파일은 공개 저장소에 없으므로, 이 저장소는 **동일 점수의 재현을 보장하지 않습니다**. 원본 노트북은 Python 3.9.19 커널에서 실행됐으며, 이 공개본은 실제 사용한 모델링·제출 흐름을 처음부터 읽고 로컬 데이터로 다시 실행할 수 있도록 정리했습니다.
+
+## 내 기여
+
+| 구성원 | 담당 내용 |
+| --- | --- |
+| 박민규 | 생성 모델 파라미터 실험, 샘플링을 적용한 예측 모델 구축·실험, 최종 제출 산출물 구성 |
+
+**박민규의 구현 기여**
+
+- 64개 거래·고객·단말 특성의 의미를 분류하고, 식별자·상수성 컬럼·시간 문자열의 처리 기준을 수립했습니다.
+- `Time_difference`를 초 단위로 변환하고, CTGAN 1,000 epoch·언더샘플링 비율 실험을 수행했습니다.
+- 최종 9·10배 샘플링의 LightGBM·XGBoost 4모델 블렌딩과 `clf_submission.csv`·`syn_submission.csv` 패키징 절차를 구현했습니다.
+- 탐색용 중간 산출물과 대회 원본 데이터는 공개 저장소에서 제외하고, 포트폴리오에서 검토 가능한 단일 실행 노트북으로 정리했습니다.
 
 ## 저장소 구성
 
 ```text
 .
-|-- README.md
-|-- requirements.txt
-|-- data/
-|   |-- README.md
-|   |-- train.csv
-|   |-- test.csv
-|   `-- sample_submission.csv
-|-- docs/
-|   |-- project-summary.md
-|   |-- experiment-notes.md
-|   |-- data-publication.md
-|   `-- public-safety.md
-|-- notebooks/
-|   |-- eda_summary.ipynb
-|   |-- ctgan_experiment.ipynb
-|   |-- kfold_generation.ipynb
-|   `-- final_modeling.ipynb
-`-- submissions/  # local only
+├── README.md
+├── requirements.txt
+├── data/
+│   └── README.md              # 로컬에 둘 대회 입력 파일 계약
+└── notebooks/
+    └── final_modeling.ipynb   # 증강·검증·블렌딩·제출 생성 흐름
 ```
 
-## 재현 방법
+## 실행 방법
+
+대회 페이지에서 받은 파일을 로컬 `data/` 폴더에 둡니다. 원본 CSV와 제출물은 재배포 조건 및 저장소 용량을 고려해 GitHub에 포함하지 않았습니다.
+
+```text
+data/
+├── train.csv
+├── test.csv
+└── sample_submission.csv
+```
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 jupyter notebook notebooks/final_modeling.ipynb
 ```
 
-재실행 시 로컬에 별도로 배치해야 하는 입력 파일:
-
-```text
-data/train.csv
-data/test.csv
-data/sample_submission.csv
-```
-
-최종 노트북은 분류 결과와 합성 데이터 제출 파일을 생성한 뒤 대회 요구 형식의 ZIP으로 패키징합니다.
-
-## 빠른 검증
-
-공개 포트폴리오 제출 전에는 아래 명령으로 필수 문서와 대용량 tracked 파일 여부를 확인합니다.
-
-```bash
-python scripts/verify_portfolio.py
-```
-
-## 회고
-
-- **검증 설계 우선**: 단일 split 튜닝보다 fold 기반 검증 체계가 더 중요했습니다.
-- **합성 데이터의 경계**: 소수 클래스 보강에는 도움이 됐지만, 생성 시점과 검증 누수 관리가 핵심이었습니다.
-- **불균형 처리는 모델별로 다름**: sampling ratio, class weight, 모델군의 상호작용이 컸습니다.
-- **제출 로직도 모델의 일부**: label mapping과 ZIP 패키징 오류가 최종 순위에 영향을 줄 수 있음을 배웠습니다.
-
-## 참고 자료
-
-- [DACON Competition Page](https://dacon.io/en/competitions/official/236297/overview/description)
-- [Project Retrospective](https://pmq0328.tistory.com/2)
+노트북의 실행 결과는 Git에서 제외한 저장소 루트의 `outputs/`에 생성됩니다. CTGAN을 클래스별로 학습하므로, 실행 시간과 결과는 사용하는 하드웨어·패키지 버전에 따라 달라질 수 있습니다. Python·NumPy·PyTorch 난수 시드는 고정했지만, 패키지 잠금 파일과 원본 데이터가 없으므로 동일 점수 재현을 보장하지는 않습니다.

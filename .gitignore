@@ -1,4 +1,4 @@
-# Python / Jupyter
+# Python and Jupyter
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
@@ -11,34 +11,17 @@ venv/
 env/
 .env
 
-# Model and experiment outputs
+# Competition data and generated submissions
+/data/*
+!/data/README.md
+/outputs/
+/submissions/
+/*.csv
+/*.zip
+
+# Local experiment artifacts
 catboost_info/
 *.log
 *.pkl
 *.joblib
 *.model
-
-# Keep only curated notebooks in notebooks/
-/*.ipynb
-!/notebooks/
-!/notebooks/*.ipynb
-
-# Do not publish competition data or submission artifacts
-/data/*
-!/data/README.md
-
-# Keep submission artifacts local only
-/*.zip
-/submissions/*
-
-# Root-level generated submissions and experiment folders
-/*.csv
-/5000sample_*/
-/make5000_*/
-/under_submission/
-/검증*/
-/컬럼제거*/
-/최종_예측결과_250109/
-
-# Office/local source artifacts not needed for the portfolio repo
-/데이터_명세_및_생성조건.xlsx

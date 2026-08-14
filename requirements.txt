@@ -3,11 +3,7 @@ numpy
 scikit-learn
 xgboost
 lightgbm
-catboost
 sdv
-imbalanced-learn
+torch
 tqdm
-scipy
-matplotlib
-seaborn
 jupyter
