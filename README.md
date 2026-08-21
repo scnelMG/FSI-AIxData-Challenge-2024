@@ -10,15 +10,6 @@
 
 [공식 대회 안내](https://dacon.io/competitions/official/236297/overview/description) · [공식 규정](https://dacon.io/competitions/official/236297/overview/rules) · [공식 리더보드](https://dacon.io/competitions/official/236297/leaderboard) · [회고](https://pmq0328.tistory.com/2)
 
-## 목차
-
-- [프로젝트 개요](#프로젝트-개요)
-- [문제 정의와 접근](#문제-정의와-접근)
-- [핵심 구현](#핵심-구현)
-- [결과와 배운 점](#결과와-배운-점)
-- [내 기여](#내-기여)
-- [실행 방법](#실행-방법)
-
 ## 프로젝트 개요
 
 | 항목 | 내용 |
@@ -144,3 +135,7 @@ jupyter notebook notebooks/final_modeling.ipynb
 ```
 
 노트북의 실행 결과는 Git에서 제외한 저장소 루트의 `outputs/`에 생성됩니다. CTGAN을 클래스별로 학습하므로, 실행 시간과 결과는 사용하는 하드웨어·패키지 버전에 따라 달라질 수 있습니다. Python·NumPy·PyTorch 난수 시드는 고정했지만, 패키지 잠금 파일과 원본 데이터가 없으므로 동일 점수 재현을 보장하지는 않습니다.
+
+## 이용 안내
+
+이 저장소는 포트폴리오 열람을 위해 공개합니다. 코드·문서·이미지의 재사용, 수정, 배포는 사전 문의가 필요합니다.
