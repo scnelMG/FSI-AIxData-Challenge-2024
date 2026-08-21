@@ -31,16 +31,7 @@
 2. 다수 클래스를 어느 수준까지 줄여야 Macro F1의 균형을 유지할 수 있는가?
 3. 단일 모델보다 서로 다른 샘플링 비율의 모델을 블렌딩하는 편이 더 안정적인가?
 
-```mermaid
-flowchart LR
-    A["DACON train / test"] --> B["Stratified 5-Fold"]
-    B --> C["Train fold 내부 CTGAN"]
-    C --> D["전처리·원-핫 인코딩"]
-    D --> E["언더샘플링 비율 비교"]
-    E --> F["LightGBM·XGBoost 학습"]
-    F --> G["4개 확률 균등 블렌딩"]
-    G --> H["clf / syn CSV와 ZIP 생성"]
-```
+> **학습 흐름**: DACON train·test → Stratified 5-Fold → train fold 내부 CTGAN → 전처리·원-핫 인코딩 → 언더샘플링 비율 비교 → LightGBM·XGBoost → 4개 확률 균등 블렌딩 → 제출 파일 생성
 
 ## 핵심 구현
 
